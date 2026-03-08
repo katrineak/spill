@@ -174,26 +174,80 @@ document.addEventListener("keydown", function (event) {
   }
 });
 
-// Click / touch — works on ALL screens (mobile support)
-canvas.addEventListener("click", function () {
+// --------------- Pointer helpers (mouse + touch) ---------------
+
+function getCanvasPos(clientX, clientY) {
+  var rect = canvas.getBoundingClientRect();
+  return {
+    x: (clientX - rect.left) * (canvas.width  / rect.width),
+    y: (clientY - rect.top)  * (canvas.height / rect.height)
+  };
+}
+
+function handlePointerAt(x, y) {
   if (state === "start") {
     startGame();
   } else if (state === "playing") {
-    doFlap();
-  } else if (state === "over" && !enteringInitials) {
-    resetGame();
+    // Check laser button first
+    var btn = getLaserButtonLayout(WIDTH, HEIGHT);
+    var dx = x - btn.cx;
+    var dy = y - btn.cy;
+    if (dx * dx + dy * dy <= btn.radius * btn.radius) {
+      handleLaser();
+    } else {
+      doFlap();
+    }
+  } else if (state === "over") {
+    if (enteringInitials) {
+      handleLetterTap(x, y);
+    } else {
+      resetGame();
+    }
   }
+}
+
+function handleLetterTap(x, y) {
+  var lp = getLetterPickerLayout(WIDTH, HEIGHT);
+  var cs = lp.cellSize;
+
+  // Check A-Z
+  for (var i = 0; i < 26; i++) {
+    var col = i % lp.cols;
+    var row = Math.floor(i / lp.cols);
+    var cx = lp.startX + col * cs;
+    var cy = lp.startY + row * cs;
+
+    if (x >= cx && x < cx + cs && y >= cy && y < cy + cs) {
+      if (initials.length < 3) {
+        initials += lp.letters[i];
+        if (initials.length === 3) {
+          newScoreIndex = insertScore(initials, score);
+          enteringInitials = false;
+        }
+      }
+      return;
+    }
+  }
+
+  // Check DEL (col 8, row 2)
+  var delX = lp.startX + 8 * cs;
+  var delY = lp.startY + 2 * cs;
+  if (x >= delX && x < delX + cs && y >= delY && y < delY + cs) {
+    if (initials.length > 0) {
+      initials = initials.slice(0, -1);
+    }
+  }
+}
+
+canvas.addEventListener("click", function (event) {
+  var pos = getCanvasPos(event.clientX, event.clientY);
+  handlePointerAt(pos.x, pos.y);
 });
 
 canvas.addEventListener("touchstart", function (event) {
   event.preventDefault();
-  if (state === "start") {
-    startGame();
-  } else if (state === "playing") {
-    doFlap();
-  } else if (state === "over" && !enteringInitials) {
-    resetGame();
-  }
+  var pos = getCanvasPos(event.touches[0].clientX, event.touches[0].clientY);
+  handlePointerAt(pos.x, pos.y);
 });
 
 // --------------- Actions ---------------
@@ -361,6 +415,7 @@ function gameLoop(timestamp) {
       drawCombo(ctx, comboCount, WIDTH);
     }
     drawActivePowerUps(ctx, player);
+    drawLaserButton(ctx, WIDTH, HEIGHT, player);
   } else if (state === "paused") {
     drawObstacles(ctx, obstacles);
     drawDebris(ctx, obstacles);
@@ -377,6 +432,9 @@ function gameLoop(timestamp) {
     }
     drawGameOverScreen(ctx, WIDTH, HEIGHT, score,
                        enteringInitials, initials, highScores, newScoreIndex);
+    if (enteringInitials) {
+      drawLetterPicker(ctx, WIDTH, HEIGHT);
+    }
   }
 
   requestAnimationFrame(gameLoop);

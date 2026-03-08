@@ -976,6 +976,85 @@ function padStart(str, len) {
   return str;
 }
 
+// --------------- Mobile UI: Laser Button ---------------
+
+function getLaserButtonLayout(width, height) {
+  return { cx: width - 50, cy: height - 60, radius: 30 };
+}
+
+function drawLaserButton(ctx, width, height, player) {
+  var btn = getLaserButtonLayout(width, height);
+  ctx.save();
+
+  var ready = player.laserCooldown <= 0 && !player.laserActive;
+  ctx.globalAlpha = ready ? 0.6 : 0.25;
+
+  ctx.fillStyle = "#FF4444";
+  ctx.beginPath();
+  ctx.arc(btn.cx, btn.cy, btn.radius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.globalAlpha = ready ? 0.95 : 0.4;
+  ctx.fillStyle = "#FFF";
+  ctx.font = "bold 22px monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("L", btn.cx, btn.cy);
+
+  ctx.restore();
+}
+
+// --------------- Mobile UI: Letter Picker ---------------
+
+function getLetterPickerLayout(width, height) {
+  var cellSize = Math.min(40, Math.floor((width - 20) / 9));
+  var cols = 9;
+  var gridW = cols * cellSize;
+  var startX = Math.floor((width - gridW) / 2);
+  var startY = Math.floor(height / 3 + 145);
+  return {
+    cellSize: cellSize,
+    cols: cols,
+    startX: startX,
+    startY: startY,
+    letters: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  };
+}
+
+function drawLetterPicker(ctx, width, height) {
+  var lp = getLetterPickerLayout(width, height);
+  var cs = lp.cellSize;
+
+  for (var i = 0; i < 26; i++) {
+    var col = i % lp.cols;
+    var row = Math.floor(i / lp.cols);
+    var x = lp.startX + col * cs;
+    var y = lp.startY + row * cs;
+
+    ctx.fillStyle = "rgba(255,255,255,0.12)";
+    roundRect(ctx, x + 2, y + 2, cs - 4, cs - 4, 4);
+    ctx.fill();
+
+    ctx.fillStyle = "#FFF";
+    ctx.font = "bold " + Math.floor(cs * 0.45) + "px monospace";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(lp.letters[i], x + cs / 2, y + cs / 2);
+  }
+
+  // DEL button after Z (col 8, row 2)
+  var delX = lp.startX + 8 * cs;
+  var delY = lp.startY + 2 * cs;
+  ctx.fillStyle = "rgba(255,100,100,0.25)";
+  roundRect(ctx, delX + 2, delY + 2, cs - 4, cs - 4, 4);
+  ctx.fill();
+  ctx.fillStyle = "#FF8888";
+  ctx.font = "bold " + Math.floor(cs * 0.35) + "px monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("DEL", delX + cs / 2, delY + cs / 2);
+}
+
 // --------------- Canvas Helpers ---------------
 
 /** Begin a rounded-rectangle sub-path (caller must fill/stroke). */
