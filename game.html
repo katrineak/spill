@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flappy Dinosaur</title>
+  <link rel="stylesheet" href="css/sprites.css">
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <!--
+    Script load order matters: utilities first, then game objects,
+    then the renderer, and finally the main game loop.
+  -->
+  <script src="js/sounds.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/powerups.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/obstacles.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

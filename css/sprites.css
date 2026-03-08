@@ -1,0 +1,14 @@
+/* ---------- Page layout ---------- */
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #222;
+}
+
+canvas {
+  display: block;
+  background: #87CEEB;
+  image-rendering: pixelated;
+}
