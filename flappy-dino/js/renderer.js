@@ -829,7 +829,7 @@ function drawScore(ctx, score, canvasWidth) {
 // --------------- Screens ---------------
 
 var GAME_VERSION      = "v1.2";
-var GAME_LAST_UPDATED = "2026-03-08";
+var GAME_LAST_UPDATED = "2026-03-08 20:10";
 
 function drawStartScreen(ctx, width, height, highScores) {
   // Version info (top-right)
