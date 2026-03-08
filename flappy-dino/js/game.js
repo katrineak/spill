@@ -39,7 +39,11 @@ var comboCount   = 0;
 var comboTimer   = 0;
 var COMBO_TIMEOUT = 120; // frames before combo resets
 
-// --------------- High Scores ---------------
+// --------------- High Scores (cloud + local fallback) ---------------
+
+var JSONBIN_ID  = "69adc84dae596e708f6dad1d";
+var JSONBIN_KEY = "$2a$10$R7n/Wmqgk932z1/FAIdsdOZkGabhQnwvV89xQGlbIqc/8lwFIgoFu";
+var JSONBIN_URL = "https://api.jsonbin.io/v3/b/" + JSONBIN_ID;
 
 var HIGH_SCORE_KEY = "flappyDinoHighScores";
 var MAX_HIGH_SCORES = 10;
@@ -49,23 +53,53 @@ var enteringInitials  = false;
 var initials          = "";
 var newScoreIndex     = -1;   // position of the just-entered score in the table
 
+/** Load scores: try cloud first, fall back to localStorage. */
 function loadHighScores() {
+  // Load local cache immediately so the start screen has something
   try {
     var data = localStorage.getItem(HIGH_SCORE_KEY);
-    if (data) {
-      highScores = JSON.parse(data);
-    }
+    if (data) highScores = JSON.parse(data);
   } catch (e) {
     highScores = [];
   }
+
+  // Then fetch the cloud version (overwrites local if successful)
+  fetchCloudScores();
 }
 
-function saveHighScores() {
+function fetchCloudScores() {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", JSONBIN_URL + "/latest", true);
+  xhr.setRequestHeader("X-Master-Key", JSONBIN_KEY);
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        var resp = JSON.parse(xhr.responseText);
+        var cloud = resp.record.highScores;
+        if (Array.isArray(cloud)) {
+          highScores = cloud;
+          saveLocal();
+        }
+      } catch (e) { /* keep local scores */ }
+    }
+  };
+  xhr.send();
+}
+
+/** Save to localStorage (instant cache). */
+function saveLocal() {
   try {
     localStorage.setItem(HIGH_SCORE_KEY, JSON.stringify(highScores));
-  } catch (e) {
-    // localStorage unavailable — scores won't persist
-  }
+  } catch (e) { /* ignore */ }
+}
+
+/** Save to cloud (async, fire-and-forget). */
+function saveCloudScores() {
+  var xhr = new XMLHttpRequest();
+  xhr.open("PUT", JSONBIN_URL, true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.setRequestHeader("X-Master-Key", JSONBIN_KEY);
+  xhr.send(JSON.stringify({ highScores: highScores }));
 }
 
 /** Does the given score qualify for the top-10 list? */
@@ -85,7 +119,8 @@ function insertScore(name, s) {
   if (highScores.length > MAX_HIGH_SCORES) {
     highScores.length = MAX_HIGH_SCORES;
   }
-  saveHighScores();
+  saveLocal();
+  saveCloudScores();
   return idx;
 }
 
