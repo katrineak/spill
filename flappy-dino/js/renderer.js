@@ -828,7 +828,18 @@ function drawScore(ctx, score, canvasWidth) {
 
 // --------------- Screens ---------------
 
+var GAME_VERSION      = "v1.1";
+var GAME_LAST_UPDATED = "2026-03-08";
+
 function drawStartScreen(ctx, width, height, highScores) {
+  // Version info (top-right)
+  ctx.save();
+  ctx.fillStyle   = "rgba(255,255,255,0.45)";
+  ctx.font        = "11px monospace";
+  ctx.textAlign   = "right";
+  ctx.fillText(GAME_VERSION + "  " + GAME_LAST_UPDATED, width - 10, 18);
+  ctx.restore();
+
   ctx.fillStyle   = "#FFF";
   ctx.strokeStyle = "#000";
   ctx.lineWidth   = 3;
