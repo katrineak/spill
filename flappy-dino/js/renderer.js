@@ -834,8 +834,8 @@ var GAME_LAST_UPDATED = "2026-03-08 20:10";
 function drawStartScreen(ctx, width, height, highScores) {
   // Version info (top-right)
   ctx.save();
-  ctx.fillStyle   = "rgba(255,255,255,0.45)";
-  ctx.font        = "11px monospace";
+  ctx.fillStyle   = "rgba(255,255,255,0.7)";
+  ctx.font        = "14px monospace";
   ctx.textAlign   = "right";
   ctx.fillText(GAME_VERSION + "  " + GAME_LAST_UPDATED, width - 10, 18);
   ctx.restore();
